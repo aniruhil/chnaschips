@@ -1,0 +1,744 @@
+---
+title: "Mapping CHNAs & CHIPs"
+author: "Ohio University"
+#format: revealjs
+format:
+  html:
+    toc: true
+    toc-location: right
+    toc-depth: 2
+    self-contained: true
+    html-math-method: katex
+    column: page
+#    css: styles.css
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+#| include: false  
+
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE, 
+  fig.width = 8, fig.height = 8, out.width = "80%",
+  fig.align = "right", fig.retina = 3, cache = FALSE
+  )
+
+library(tidyverse)
+readxl::read_excel(
+  "~/Downloads/mappingOhioCHNA.xlsx"
+  ) -> chnachip
+
+chnachip %>%
+  group_by(FIPS, org_type) %>%
+  select(
+    -appalachian
+    ) %>%
+  summarize(
+    across(
+      1:34,
+      sum,
+      na.rm = TRUE
+      )
+    ) -> df01
+
+chnachip %>%
+  select(
+    -c(appalachian, org_type)
+    ) %>%
+  group_by(FIPS) %>%
+  summarize(
+    across(
+      1:34,
+      sum,
+      na.rm = TRUE
+      )
+    ) -> df02
+
+library(tigris)
+options(tigris_use_cache = TRUE)
+
+counties(state = "OH", cb = TRUE, year = 2020) -> ohcts
+
+ohcts %>%
+  mutate(
+    FIPS = as.numeric(GEOID)
+    ) %>%
+  left_join(
+    df01,
+    by = "FIPS"
+    ) -> mydf01
+
+ohcts %>%
+  mutate(
+    FIPS = as.numeric(GEOID)
+    ) %>%
+  left_join(
+    df02,
+    by = "FIPS"
+    ) -> mydf02
+
+c("Adams", "Ashtabula", "Athens", "Belmont", "Brown", "Carroll", "Clermont", "Columbiana", "Coshocton", "Gallia", "Guernsey", "Harrison", "Highland", "Hocking", "Holmes", "Jackson", "Jefferson", "Lawrence", "Mahoning", "Meigs", "Monroe", "Morgan", "Muskingum", "Noble", "Perry", "Pike", "Ross", "Scioto", "Trumbull", "Tuscarawas", "Vinton", "Washington") -> appalachian.ohio 
+
+mydf02 %>%
+  mutate(
+    appalachia = case_when(
+      NAME %in% appalachian.ohio ~ "Appalachian",
+      TRUE ~ "Not Appalachian"
+      )
+    ) -> mydf02
+  
+```
+
+## How often do they mention a particular need?
+
+```{r, out.width="80%", fig.width = 11, fig.height=11}
+
+#| column: screen-inset
+
+mydf02 %>%
+  group_by(appalachia) %>%
+  select(
+    appalachia, starts_with("n", ignore.case = FALSE)
+  ) %>%
+  sf::st_drop_geometry() -> mydf03
+
+mydf03 %>%
+  group_by(appalachia) %>%
+  pivot_longer(
+    names_to = "Issue",
+    values_to = "Mentions",
+    2:18
+  ) -> mydf04
+
+mydf04 %>%
+  group_by(appalachia, Issue) %>%
+  summarize(Total = sum(Mentions)) -> mytab
+
+mytab %>%
+  ungroup() %>%
+  mutate(
+    Issue = substring(Issue, 2)
+  ) %>%
+  filter(
+    appalachia == "Appalachian"
+  ) %>%
+  ggplot() +
+  geom_col(
+    aes(
+      x = Total, 
+      y = forcats::fct_reorder(Issue, Total),
+      fill = Total
+    )
+  ) +
+  geom_text(
+    aes(
+      x = Total, 
+      y = forcats::fct_reorder(Issue, Total),
+      label = Total,
+      hjust = -1
+    ),
+      color = "black"
+  ) +
+  xlim(0, 200) +
+  hrbrthemes::theme_ipsum_rc() +
+  scale_fill_continuous() +
+  theme(legend.position = "none") +
+  labs(title = 'Appalachian Counties',
+       y = "",
+       x = "Total Number of Mentions") -> p1
+
+mytab %>%
+  ungroup() %>%
+  mutate(
+    Issue = substring(Issue, 2)
+  ) %>%
+  filter(
+    appalachia == "Not Appalachian"
+  ) %>%
+  ggplot() +
+  geom_col(
+    aes(
+      x = Total, 
+      y = forcats::fct_reorder(Issue, Total),
+      fill = Total
+    )
+  ) +
+  geom_text(
+    aes(
+      x = Total, 
+      y = forcats::fct_reorder(Issue, Total),
+      label = Total,
+      hjust = -1
+    ),
+      color = "black"
+  ) +
+  xlim(0, 225) +  
+  hrbrthemes::theme_ipsum_rc() +
+  scale_fill_continuous() +
+  theme(legend.position = "none") +
+  labs(title = 'Non-Appalachian Counties',
+       y = "",
+       x = "Total Number of Mentions") -> p2
+
+library(patchwork)
+(p1 | p2)
+```
+
+
+
+## Mental Health
+
+```{r mental-health}
+#library(nat)
+
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nMental Health`),
+    alpha = 0.8,
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    #, title = "Mental Health"
+    )
+
+```
+
+## Substance Use
+
+```{r substance-use}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nSubstance Use/Abuse`),
+    alpha = 0.8,
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+#    , title = "Substance Use"
+    )
+
+```
+
+
+## Access
+
+```{r access}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nAccess`),
+    alpha = 0.8,
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    #, title = "Access"
+    )
+
+```
+
+
+## Obesity, Nutrition, Inactivity
+
+```{r obesity}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nObesity/Nutrition/Inactivity`),
+    alpha = 0.8,
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    #, title = "Obesity/Nutrition/Inactivity"
+    )
+
+```
+
+
+## Chronic Disease
+
+```{r chronic-disease}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nChronic Disease`),
+    alpha = 0.8,
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    #, title = "Chronic Disease"
+    )
+
+```
+
+
+## Diabetes
+
+```{r diabetes}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nDiabetes`),
+    alpha = 0.8,
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    #, title = "Diabetes"
+    )
+
+```
+
+
+## Cancer
+
+```{r cancer}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nCancer`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    #, title = "Cancer"
+    )
+
+```
+
+
+## Senior Health
+
+```{r senior-health}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nSenior Health`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "Senior Health"
+    )
+
+```
+
+
+## Maternal and/or Child Health
+
+```{r maternal-child-health}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nMaternal and/or Child Health`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "Maternal and/or Child Health"
+    )
+
+```
+
+
+## Heart Disease
+
+```{r heart-disease}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nHeart DIsease`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "Heart Disease"
+    )
+
+```
+
+
+## Tobacco
+
+```{r tobacco}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nTobacco`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "Tobacco"
+    )
+
+```
+
+
+## SDOH & Disparities
+
+```{r sdoh-disparities}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nSDOH + Disparities`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "SDOH & Disparities"
+    )
+
+```
+
+
+## Asthma
+
+```{r asthma}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nAsthma`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "Asthma"
+    )
+
+```
+
+
+## Pediatric
+
+```{r pediatric}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nPediatric`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "Pediatric"
+    )
+
+```
+
+
+## Infectious Disease
+
+```{r infectious-disease}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nInfectious Disease`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    #, title = "Infectious Disease"
+    )
+
+```
+
+
+## Oral Health
+
+```{r oral-health}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nOral Health`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "Oral Health"
+    )
+
+```
+
+
+## Preventative Health
+
+```{r preventive-health}
+mydf02 %>%
+  ggplot() +
+  geom_sf(
+    # aes(fill = cut_interval(`nMental Health`, 3)),
+    aes(fill = `nPreventative Health`),
+    alpha = 0.8,
+     
+    size = 0.3
+  ) +
+  geom_sf_text(
+    aes(label = NAME),
+     size = 2.5, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +
+  scale_fill_viridis_c() +
+  theme(
+    panel.background = element_blank(),
+    line = element_blank(), 
+    axis.text = element_blank(), 
+    axis.title = element_blank()
+    ) + 
+  coord_sf(datum = NA) +
+  labs(
+    fill = "No. of Mentions"
+    # , title = "Preventative Health"
+    )
+
+```
