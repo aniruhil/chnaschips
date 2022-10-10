@@ -27,7 +27,7 @@ knitr::opts_chunk$set(
 
 library(tidyverse)
 readxl::read_excel(
-  "~/Downloads/mappingOhioCHNA.xlsx"
+  "mappingOhioCHNA.xlsx"
   ) -> chnachip
 
 chnachip %>%
