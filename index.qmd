@@ -941,7 +941,7 @@ mapdf01 %>%
 
 ```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
-  filter(Issue == "Heart Disease", Type == "Needs Assessment") %>%
+  filter(Issue == "Heart DIsease", Type == "Needs Assessment") %>%
   ggplot() +
   geom_sf(
     # aes(fill = cut_interval(`nMental Health`, 3)),
@@ -976,7 +976,7 @@ mapdf01 %>%
     ) -> p1
 
 mapdf01 %>%
-  filter(Issue == "Heart Disease", Type == "Improvement Plan") %>%
+  filter(Issue == "Heart DIsease", Type == "Improvement Plan") %>%
   ggplot() +
   geom_sf(
     # aes(fill = cut_interval(`nMental Health`, 3)),
