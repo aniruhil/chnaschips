@@ -100,7 +100,7 @@ mydf02 %>%
 
 
 
-```{r, out.width="80%", fig.width = 12, fig.height=11}
+```{r, out.width="80%", fig.width = 12, fig.height=8}
 
 #| column: screen-inset
 
@@ -162,7 +162,7 @@ mydf06 %>%
   ) +
   xlim(0, 100) +
   hrbrthemes::theme_ipsum_rc() +
-  scale_fill_continuous() +
+  scale_fill_gradient() +
   theme(legend.position = "none") +
   labs(title = 'Appalachian Counties',
        y = "",
@@ -195,7 +195,7 @@ mydf06 %>%
   ) +
   xlim(0, 100) +  
   hrbrthemes::theme_ipsum_rc() +
-  scale_fill_continuous() +
+  scale_fill_gradient() +
   theme(legend.position = "none") +
   labs(title = 'Non-Appalachian Counties',
        y = "",
@@ -218,7 +218,7 @@ mydf02 %>%
   ) %>%
   group_by(appalachia, NAME, norgs, Issue) %>%
   mutate(
-    pct = round( (Values / norgs) * 100, digits = 1)
+    pct = round( (sum(Values) / norgs) * 100, digits = 1)
   ) %>%
   separate(
     Issue,
@@ -238,10 +238,10 @@ mydf02 %>%
 
 ```
 
+# Mapping Needs Assessments and Improvement Plans
+A series of map-pairs follow, for every issue coded in the data-set. The map on the left is for the needs assessment, and the map on the right is for the improvement plan. Appalachian counties' names are shown in white, and the color gradient goes from `low = dark blue` to `high = light blue`. The percentages mapped were calculated by looking at the total number of organizations responding in a county, and the total number of times an issue was mentioned in the county. So, if Adams County had two organizations and each mentioned Mental Health, the county percentage for Mental Health will be 100%. These percentages are also shown above the county name. 
 
-## Mental Health
-
-```{r mental-health, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r mental-health, out.width = "90%", fig.width = 11, fig.height = 11}
 #library(nat)
 
 mapdf01 %>%
@@ -252,14 +252,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() + 
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -281,14 +287,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() + 
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -302,13 +314,12 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Mental Health")
 
 ```
 
-## Substance Use
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Substance Use/Abuse", Type == "Needs Assessment") %>%
   ggplot() +
@@ -317,14 +328,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+  ) +  
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -346,14 +363,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -367,14 +390,14 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Substance Use")
+
 
 ```
 
 
-## Access
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Access", Type == "Needs Assessment") %>%
   ggplot() +
@@ -383,14 +406,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+    geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -412,14 +441,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -433,13 +468,14 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Access")
+
 
 ```
 
-## Obesity, Nutrition, Inactivity
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Obesity/Nutrition/Inactivity", Type == "Needs Assessment") %>%
   ggplot() +
@@ -448,14 +484,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -477,14 +519,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -498,13 +546,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Obesity, Nutrition, Inactivity")
 
 ```
 
-## Chronic Disease
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Chronic Disease", Type == "Needs Assessment") %>%
   ggplot() +
@@ -513,14 +561,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -542,14 +596,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -563,14 +623,14 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Chronic Disease")
+
 
 ```
 
 
-## Diabetes
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Diabetes", Type == "Needs Assessment") %>%
   ggplot() +
@@ -579,14 +639,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -608,14 +674,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -629,14 +701,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Diabetes")
+
 
 ```
 
 
-## Cancer
-
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Cancer", Type == "Needs Assessment") %>%
   ggplot() +
@@ -645,14 +716,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -674,14 +751,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -695,14 +778,15 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Cancer")
+
 
 ```
 
 
-## Senior Health
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Senior Health", Type == "Needs Assessment") %>%
   ggplot() +
@@ -711,14 +795,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -740,14 +830,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -761,13 +857,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Senior Health")
 
 ```
 
-## Maternal and/or Child Health
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Maternal and/or Child Health", Type == "Needs Assessment") %>%
   ggplot() +
@@ -776,14 +872,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -805,14 +907,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+    geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -826,14 +934,12 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Maternal and/or Child Health")
 
 ```
 
 
-## Heart Disease
-
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Heart Disease", Type == "Needs Assessment") %>%
   ggplot() +
@@ -842,14 +948,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -871,14 +983,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -892,13 +1010,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Heart Disease")
 
 ```
 
-## Tobacco
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Tobacco", Type == "Needs Assessment") %>%
   ggplot() +
@@ -907,14 +1025,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -936,14 +1060,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -957,14 +1087,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Tobacco")
 
 ```
 
 
-## SDOH & Disparities
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "SDOH + Disparities", Type == "Needs Assessment") %>%
   ggplot() +
@@ -973,14 +1102,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1002,14 +1137,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1023,14 +1164,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "SDOH & Disparities")
 
 ```
 
 
-## Asthma
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Asthma", Type == "Needs Assessment") %>%
   ggplot() +
@@ -1039,14 +1179,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1068,14 +1214,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1089,13 +1241,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Asthma")
 
 ```
 
-## Pediatric
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Pediatric", Type == "Needs Assessment") %>%
   ggplot() +
@@ -1104,14 +1256,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1133,14 +1291,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1154,13 +1318,12 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Pediatric")
 
 ```
 
-## Infectious Disease
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Infectious Disease", Type == "Needs Assessment") %>%
   ggplot() +
@@ -1169,14 +1332,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1198,14 +1367,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1219,13 +1394,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Infectious Disease")
 
 ```
 
-## Oral Health
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Oral Health", Type == "Needs Assessment") %>%
   ggplot() +
@@ -1234,14 +1409,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1263,14 +1444,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1284,13 +1471,13 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Oral Health")
 
 ```
 
-## Preventative Health
 
-```{r, out.width = "100%", fig.width = 13, fig.height = 13}
+
+```{r, out.width = "90%", fig.width = 11, fig.height = 11}
 mapdf01 %>%
   filter(Issue == "Preventative Health", Type == "Needs Assessment") %>%
   ggplot() +
@@ -1299,14 +1486,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+    geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1328,14 +1521,20 @@ mapdf01 %>%
     aes(fill = pct),
     alpha = 0.8,
     size = 0.3,
-    color = "white"
+    color = "grey45"
   ) +
   geom_sf_text(
     aes(label = NAME),
      size = 2, 
     color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
   ) +
-  scale_fill_viridis_c(direction = -1) +
+  geom_sf_text(
+    aes(label = pct),
+     size = 2, 
+    color = ifelse(mydf02$appalachia != "Appalachian", "black", "white"),
+    vjust = -1.5
+  ) +
+  scale_fill_gradient() +
   theme(
     panel.background = element_blank(),
     line = element_blank(), 
@@ -1349,6 +1548,7 @@ mapdf01 %>%
     , title = "Improvement Plan"
     ) -> p2
 
-(p1 | p2)
+(p1 | p2) + plot_annotation(title = "Preventative Health")
 
 ```
+
